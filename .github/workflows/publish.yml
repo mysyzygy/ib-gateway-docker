@@ -33,18 +33,12 @@ jobs:
       ###############################################################
       #   Login container registry
       ###############################################################
-      - name: Log in to the Container registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       ###############################################################
       #   Build ibgateway
@@ -55,8 +49,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/gnzsnz/ib-gateway
-            gnzsnz/ib-gateway
+            ghcr.io/mysyzygy/ib-gateway
           flavor: |
             latest=false
           tags: |
@@ -74,33 +67,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      ###############################################################
-      #   Build tws
-      ###############################################################
-
-      - name: Docker meta TWS
-        id: meta-tws
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/gnzsnz/tws-rdesktop
-            gnzsnz/tws-rdesktop
-          flavor: |
-            latest=false
-          tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
-
-      - name: Build and push TWS
-        uses: docker/build-push-action@v5
-        with:
-          platforms: linux/amd64,linux/arm64
-          context: ${{ steps.channel.outputs.channel }}
-          file: ${{ steps.channel.outputs.channel }}/Dockerfile.tws
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          push: true
-          tags: ${{ steps.meta-tws.outputs.tags }}
-          labels: ${{ steps.meta-tws.outputs.labels }}
