@@ -92,8 +92,13 @@ jobs:
 
           # update Dockerfile.template, but don't run update.sh
           # next ib gateway release will run update.sh
+          echo ".> computing sha256 of IBCLinux-${latest}.zip"
+          curl -sSLO "https://github.com/IbcAlpha/IBC/releases/download/${latest}/IBCLinux-${latest}.zip"
+          sha="$(sha256sum "IBCLinux-${latest}.zip" | cut -d ' ' -f 1)"
+          rm -f "IBCLinux-${latest}.zip"
           echo ".> updating Dockerfile.template"
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
+          sed -i "s/^ARG IBC_SHA256=.*/ARG IBC_SHA256=${sha}/" Dockerfile.template
           echo ".> updating Dockerfile.tws.template"
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.tws.template
 

@@ -8,7 +8,7 @@
 # hadolint global ignore=DL3008
 
 ARG IB_VERSION=10.45.1j
-FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
+FROM ghcr.io/mysyzygy/ib-gateway:${IB_VERSION} AS setup
 
 WORKDIR /
 
@@ -63,8 +63,8 @@ RUN if [ -d "${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/jre" ]; then \
 fi
 
 # labels
-LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
-LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop
+LABEL org.opencontainers.image.source=https://github.com/mysyzygy/ib-gateway-docker
+LABEL org.opencontainers.image.url=https://github.com/mysyzygy/ib-gateway-docker/pkgs/container/tws-rdesktop
 LABEL org.opencontainers.image.description="Docker image with XFCE, TWS & IBC"
 LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
 LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}

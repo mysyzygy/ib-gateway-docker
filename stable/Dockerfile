@@ -12,8 +12,10 @@ ENV IB_GATEWAY_VERSION=10.45.1j
 ENV IB_GATEWAY_CHANNEL=stable
 ENV IBC_VERSION=3.24.2
 ARG DEBIAN_FRONTEND=noninteractive
-ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
+ARG IB_GATEWAY_REPO="https://github.com/mysyzygy/ib-gateway-docker"
 ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
+# sha256 of IBC_FILE, updated together with IBC_VERSION
+ARG IBC_SHA256=cc097ca1dfa75413a5fbe02e4743050af15f3308eb6a97c769b3cff9850c80c5
 ARG IBC_REPO="https://github.com/IbcAlpha/IBC"
 ARG IBC_URL="${IBC_REPO}/releases/download/${IBC_VERSION}/${IBC_FILE}"
 
@@ -45,6 +47,7 @@ RUN apt-get update -y && \
   fi && \
   # Install IBC
   curl -sSOL "${IBC_URL}" && \
+  echo "${IBC_SHA256}  ${IBC_FILE}" | sha256sum --check && \
   mkdir /root/ibc && \
   unzip "./${IBC_FILE}" -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \
@@ -86,7 +89,7 @@ COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 RUN apt-get update -y && \
   apt-get upgrade -y && \
   apt-get install --no-install-recommends --yes \
-  gettext-base socat xvfb x11vnc sshpass openssh-client sudo telnet ca-certificates \
+  gettext-base socat xvfb x11vnc sshpass openssh-client telnet ca-certificates \
   libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
   libdrm2 libexpat1 libgbm1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 \
   libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 \
@@ -98,7 +101,6 @@ RUN apt-get update -y && \
   ;fi && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
-  echo "ibgateway ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
   chmod a+x ${SCRIPT_PATH}/*.sh && \
   mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 
