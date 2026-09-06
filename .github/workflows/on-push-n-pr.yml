@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: ['master', '!update-*-to-*', '!IBC-update*']
 
+permissions:
+  contents: read
+
 jobs:
   build:
       name: Build image
