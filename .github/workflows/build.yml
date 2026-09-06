@@ -1,4 +1,4 @@
-name: Docker Image Build - ibgateway/TWS build
+name: Docker Image Build - ibgateway build
 
 on:
   workflow_call:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    name: Build ibgateway & TWS
+    name: Build ibgateway
 
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -38,8 +38,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            ghcr.io/gnzsnz/ib-gateway
-            gnzsnz/ib-gateway
+            ghcr.io/mysyzygy/ib-gateway
           flavor: |
             latest=false
           tags: |
@@ -58,33 +57,3 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      ###############################################################
-      #   Build tws
-      ###############################################################
-      - name: Docker metadata tws
-        id: meta-tws
-        uses: docker/metadata-action@v6
-        with:
-          images: |
-            ghcr.io/gnzsnz/tws-rdesktop
-            gnzsnz/tws-rdesktop
-          flavor: |
-            latest=false
-          tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
-
-      - name: Build TWS Docker image
-        uses: docker/build-push-action@v7
-        with:
-          push: false
-          load: false
-          platforms: linux/amd64,linux/arm64
-          context: ${{ env.CHANNEL }}
-          file: ${{ env.CHANNEL }}/Dockerfile.tws
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: ${{ steps.meta-tws.outputs.tags }}
-          labels: ${{ steps.meta-tws.outputs.labels }}

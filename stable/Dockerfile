@@ -10,7 +10,7 @@ FROM ubuntu:24.04 AS setup
 
 ENV IB_GATEWAY_VERSION=10.45.1j
 ENV IB_GATEWAY_CHANNEL=stable
-ENV IBC_VERSION=3.24.1
+ENV IBC_VERSION=3.24.2
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
 ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
@@ -86,7 +86,11 @@ COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 RUN apt-get update -y && \
   apt-get upgrade -y && \
   apt-get install --no-install-recommends --yes \
-  gettext-base socat xvfb x11vnc sshpass openssh-client sudo telnet && \
+  gettext-base socat xvfb x11vnc sshpass openssh-client sudo telnet ca-certificates \
+  libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+  libdrm2 libexpat1 libgbm1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 \
+  libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 \
+  libxrandr2 fonts-liberation libasound2t64 libxtst6 xdg-utils && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   if id ubuntu; then \
@@ -104,8 +108,8 @@ WORKDIR ${HOME}
 # Start run script
 CMD ["/home/ibgateway/scripts/run.sh"]
 
-LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
-LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway
+LABEL org.opencontainers.image.source=https://github.com/mysyzygy/ib-gateway-docker
+LABEL org.opencontainers.image.url=https://github.com/mysyzygy/ib-gateway-docker/pkgs/container/ib-gateway
 LABEL org.opencontainers.image.description="Docker image with IB Gateway and IBC "
 LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
 LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}

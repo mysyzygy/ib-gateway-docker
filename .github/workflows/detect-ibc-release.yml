@@ -37,7 +37,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           IBC_LATEST="$(gh release list -R ${{ env.IBC_REPO }} --exclude-drafts --exclude-pre-releases |grep 'Latest'|cut -f1)"
-          if [ -n ${IBC_LATEST} ]
+          if [ -n "${IBC_LATEST}" ]
           then
             echo "IBC_LATEST=$IBC_LATEST" >> $GITHUB_OUTPUT
           else
@@ -66,7 +66,7 @@ jobs:
           prefix=${{ env.BRANCH_PREFIX }}
           search=${prefix}-${latest}
 
-          if [ "$(git branch --list | grep ${search})" ]; then
+          if [ -n "$(git ls-remote --heads origin "${search}")" ]; then
             echo "BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
           else
             echo "BRANCH_EXISTS=false" >> $GITHUB_OUTPUT
@@ -107,6 +107,6 @@ jobs:
     strategy:
       matrix:
         channel: ['stable', 'latest']
-    uses: gnzsnz/ib-gateway-docker/.github/workflows/build.yml@master
+    uses: ./.github/workflows/build.yml
     with:
         channel: ${{ matrix.channel }}
