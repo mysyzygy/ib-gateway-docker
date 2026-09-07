@@ -12,6 +12,7 @@ services:
       dockerfile: Dockerfile.tws
       tags:
         - "ghcr.io/gnzsnz/tws-rdesktop:latest"
+    # this fork does not publish tws-rdesktop; the upstream image is used
     image: ghcr.io/gnzsnz/tws-rdesktop:latest
     environment:
       PUID: ${PUID:-1000}

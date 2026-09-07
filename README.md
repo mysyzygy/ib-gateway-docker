@@ -1,8 +1,32 @@
 # Interactive Brokers Gateway Docker
 
-[![Build](https://github.com/gnzsnz/ib-gateway-docker/actions/workflows/on-push-n-pr.yml/badge.svg?branch=master)](https://github.com/gnzsnz/ib-gateway-docker/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Discussions](https://img.shields.io/github/discussions/gnzsnz/ib-gateway-docker)](https://github.com/gnzsnz/ib-gateway-docker/discussions) [![GitHub Repo stars](https://img.shields.io/github/stars/gnzsnz/ib-gateway-docker)](#repo-stats) [![GitHub forks](https://img.shields.io/github/forks/gnzsnz/ib-gateway-docker)](https://github.com/gnzsnz/ib-gateway-docker/network/members)
+[![Build](https://github.com/mysyzygy/ib-gateway-docker/actions/workflows/on-push-n-pr.yml/badge.svg?branch=master)](https://github.com/mysyzygy/ib-gateway-docker/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<img src="https://github.com/gnzsnz/ib-gateway-docker/blob/master/logo.png" height="300" class="center" alt="IB Gateway Docker"/>
+<img src="https://github.com/mysyzygy/ib-gateway-docker/blob/master/logo.png" height="300" class="center" alt="IB Gateway Docker"/>
+
+## About this fork
+
+This is a fork of [gnzsnz/ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker),
+maintained independently. Upstream changes are merged periodically, but this
+fork deliberately differs:
+
+- **Only the `ib-gateway` image is published**, to
+  `ghcr.io/mysyzygy/ib-gateway`. No Docker Hub image and no `tws-rdesktop`
+  image. The TWS Dockerfile is kept in the repo for reference only; if you
+  need TWS use the [upstream image](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop).
+- **No passwordless root in the container.** Upstream grants the `ibgateway`
+  user `NOPASSWD:ALL` sudo; this fork removes `sudo` entirely.
+- **IBC download is checksum-verified.** `Dockerfile` pins `IBC_SHA256` and
+  the build fails on a mismatch. The IB Gateway installer is verified against
+  the `.sha256` published alongside it in this repo's
+  [releases](https://github.com/mysyzygy/ib-gateway-docker/releases).
+- **Everything is pinned by digest.** The `ubuntu` base image is pinned to its
+  multi-arch digest and every GitHub Action to a commit SHA. Dependabot keeps
+  both current.
+- **Least-privilege CI.** Every workflow declares its own `permissions`; the
+  repository default is read-only.
+
+See [Release process](#release-process) for how images get published.
 
 ## What is it?
 
@@ -12,7 +36,7 @@ interaction on a docker container
 It includes:
 
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
-- Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`
+- Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`. **Not published by this fork**, see [About this fork](#about-this-fork).
 - [IBC](https://github.com/IbcAlpha/IBC) - to control TWS/IB Gateway (simulates user input).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11
   virtual framebuffer to run IB Gateway Application without graphics hardware.
@@ -35,24 +59,27 @@ It includes:
 
 ## Supported Tags
 
-Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
+This fork publishes the [ib-gateway][1] image, for `linux/amd64` and
+`linux/arm64`, with the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
 | [ib-gateway][1] | `latest` | `10.50.1e` | `3.24.2` | `latest` `10.50` `10.50.1e` |
 | [ib-gateway][1] |`stable` | `10.45.1j` | `3.24.2` | `stable` `10.45` `10.45.1j` |
-| [tws-rdesktop][2] | `latest` | `10.50.1e` | `3.24.2` | `latest` `10.50` `10.50.1e` |
-| [tws-rdesktop][2] |`stable` | `10.45.1j` | `3.24.2` | `stable` `10.45` `10.45.1j` |
 
-All tags are available in the container repository for [ib-gateway][1] and
-[tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
+All tags are available in the container repository for [ib-gateway][1]. The
+TWS image ([tws-rdesktop][2]) is only available from upstream.
+
+```bash
+docker pull ghcr.io/mysyzygy/ib-gateway:stable
+```
 
 ## How to use it?
 
 Create a `docker-compose.yml` file (or include ib-gateway services on your existing
 one). The sample files provided can be used as starting point,
-[ib-gateway-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) and
-[tws-rdesktop-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml).
+[ib-gateway-compose](https://github.com/mysyzygy/ib-gateway-docker/blob/master/docker-compose.yml) and
+[tws-rdesktop-compose](https://github.com/mysyzygy/ib-gateway-docker/blob/master/tws-docker-compose.yml).
 
 ```yaml
 name: algo-trader
@@ -62,8 +89,8 @@ services:
     build:
       context: ./stable
       tags:
-        - "ghcr.io/gnzsnz/ib-gateway:stable"
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+        - "ghcr.io/mysyzygy/ib-gateway:stable"
+    image: ghcr.io/mysyzygy/ib-gateway:stable
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
@@ -114,7 +141,7 @@ services:
 
 ```
 
-Create an .env on root directory. You can use the provided [.env-dist](https://github.com/gnzsnz/ib-gateway-docker/blob/master/.env-dist) as a starting point. Example .env file:
+Create an .env on root directory. You can use the provided [.env-dist](https://github.com/mysyzygy/ib-gateway-docker/blob/master/.env-dist) as a starting point. Example .env file:
 
 ```bash
 TWS_USERID=myTwsAccountName
@@ -168,7 +195,7 @@ docker compose up
 
 To get a GUI you can use vnc for ib-gateway or RDP for TWS.
 
-Looking for help? Please keep reading below, or go to
+Looking for help? Please keep reading below, or go to the upstream
 [discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common
 problems and solutions. If you have problems please go through the [troubleshooting guide](https://github.com/gnzsnz/ib-gateway-docker/discussions/245)
 
@@ -197,7 +224,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `TWS_COLD_RESTART` | IBC >= 3.19 set this value to <hh:mm> | **not defined** |
 | `SAVE_TWS_SETTINGS`  | automatically save its settings on a schedule of your choosing. You can specify one or more specific times, ex `SaveTwsSettingsAt=08:00   12:30 17:30`  | **not defined**  |
 | `RELOGIN_AFTER_TWOFA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | no  |
-| `EXISTING_SESSION_DETECTED_ACTION` | Set Existing Session Detected Action. See IBC [documentation](https://github.com/gnzsnz/ib-gateway-docker/blob/master/latest/config/ibc/config.ini.tmpl#L296-L329) | primary |
+| `EXISTING_SESSION_DETECTED_ACTION` | Set Existing Session Detected Action. See IBC [documentation](https://github.com/mysyzygy/ib-gateway-docker/blob/master/latest/config/ibc/config.ini.tmpl#L296-L329) | primary |
 | `ALLOW_BLIND_TRADING` | TWS displays a dialog to warn you against blind trading.See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L702)| no |
 | `TIME_ZONE`  | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
 | `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. If `TRADING_MODE=both` this will be the prefix four your settings. ex `/config/tws_settings_live` and `/config/tws_settings_paper`. |  |
@@ -248,13 +275,18 @@ Note that with the above `docker-compose.yml`, ports are only exposed to the doc
 
 ## Using TWS
 
+> **This fork does not build or publish the TWS image.** `Dockerfile.tws` and
+> `tws-docker-compose.yml` are kept in sync with upstream for reference, and
+> `tws-docker-compose.yml` pulls the upstream image. The rest of this section
+> is upstream documentation.
+
 From `10.26.1h` it's possible to run TWS in a container. [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop) image provides a desktop environment that allows to use TWS.
 
 ### Performance considerations for TWS
 
 [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop) has the following recomended settings.
 
-In [tws-docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml):
+In [tws-docker-compose.yml](https://github.com/mysyzygy/ib-gateway-docker/blob/master/tws-docker-compose.yml):
 
 - set `/dev/dri:/dev/dri`
 - shm_size: "1gb"
@@ -275,15 +307,15 @@ Image IB Gateway and IBC config file locations:
 
 | App  | Config file  | Default  |
 | --- | --- | --- |
-| IB Gateway | /home/ibgateway/Jts/jts.ini    | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| IBC  | /home/ibgateway/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
+| IB Gateway | /home/ibgateway/Jts/jts.ini    | [jts.ini](https://github.com/mysyzygy/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
+| IBC  | /home/ibgateway/ibc/config.ini | [config.ini](https://github.com/mysyzygy/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
 
 For TWS image config file locations are:
 
 | App | Config file  | Default  |
 | --- | --- | --- |
-| TWS | /opt/ibkr/jts.ini   | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| IBC | /opt/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
+| TWS | /opt/ibkr/jts.ini   | [jts.ini](https://github.com/mysyzygy/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
+| IBC | /opt/ibc/config.ini | [config.ini](https://github.com/mysyzygy/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
 
 Sample settings:
 
@@ -384,7 +416,7 @@ additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
 
 Some examples of possible configurations
 
-- Available to `localhost`, this is the default setup provided in [docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml).
+- Available to `localhost`, this is the default setup provided in [docker-compose.yml](https://github.com/mysyzygy/ib-gateway-docker/blob/master/docker-compose.yml).
 Suitable for testing. It does not expose API port to host network, host must be trusted.
 - Available to the host network. Unsecure configuration, suitable for short
   tests in a secure network. **Not recommended**.
@@ -426,7 +458,7 @@ using ssh client. So basically it will connect to an ssh server and expose IB
 Gateway port there.
 
 An example setup would be to run
-[ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a
+[ib-gateway-docker](https://github.com/mysyzygy/ib-gateway-docker) with a
 sidecar [ssh bastion](https://github.com/gnzsnz/docker-bastion) and a
 [jupyter-quant](https://github.com/gnzsnz/jupyter-quant), which provides a
 fully working algorithmic trading environment. In simple terms ib gateway opens
@@ -580,21 +612,13 @@ value in seconds defined in `SSH_RESTART`.
 ## aarch64 support
 
 IBKR's has started releasing an installer for `linux-arm`. And this image is
-using it. While the official installer is for `ib-gateway`, we provide an TWS
-image too. So please take into account that TWS image might have unexpected
-bugs.
-
-Please go to discussions section to see common problems. Avoid creating issues unless
-you have empirically probed that is a bug, ie it does not work to me is not a bug.
+using it. Both `linux/amd64` and `linux/arm64` are published under the same
+tags.
 
 To use aarch64 you just need to run:
 
 ```bash
-# ib-gateway
 docker compose up
-
-# TWS
-docker compose -f tws-docker-compose.yml up
 ```
 
 This will pull the right image for aarch64 architecture.
@@ -602,10 +626,10 @@ This will pull the right image for aarch64 architecture.
 ## IB Gateway installation files
 
 Note that the
-[Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+[Dockerfile](https://github.com/mysyzygy/ib-gateway-docker/blob/master/Dockerfile.template)
 **does not download IB Gateway installer files from IB homepage but from the
-[github-releases](https://github.com/gnzsnz/ib-gateway-docker/releases) of this
-project**.
+[github-releases](https://github.com/mysyzygy/ib-gateway-docker/releases) of this
+repository**.
 
 This is because it shall be possible to (re-)build the image, targeting a
 specific Gateway version,
@@ -613,60 +637,72 @@ but IB only provide download links for the `latest` or `stable` version (there
 is no 'old version' download archive).
 
 The installer files stored on
-[releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been
-downloaded from IB homepage and renamed to reflect the version.
+[releases](https://github.com/mysyzygy/ib-gateway-docker/releases) are
+downloaded from IB homepage by the
+[Detect IB Gateway Releases](https://github.com/mysyzygy/ib-gateway-docker/blob/master/.github/workflows/detect-releases.yml)
+workflow, renamed to reflect the version, and published together with a
+`.sha256` file. The build verifies the installer against that checksum, and
+verifies the IBC zip against the `IBC_SHA256` pinned in the `Dockerfile`.
 
-IF you feel adventurous and you want to download Gateway installer from IB
-homepage directly, or use your local installation file, change this line
-on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
-`RUN curl -sSL
-https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
---output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download
-(or copy) the file from the source you prefer.
+Both sources are build arguments, so you can point the build elsewhere without
+editing the `Dockerfile`:
 
-**Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
+```bash
+# build from upstream's releases instead of this fork's
+docker build --build-arg IB_GATEWAY_REPO=https://github.com/gnzsnz/ib-gateway-docker stable
+
+# build with a newer IBC (checksum must match the zip)
+docker build --build-arg IBC_SHA256=<sha256 of IBCLinux-x.y.z.zip> stable
+```
 
 ### How to build locally step by step
 
 1. Clone this repo
 
     ```bash
-      git clone https://github.com/gnzsnz/ib-gateway-docker
+      git clone https://github.com/mysyzygy/ib-gateway-docker
     ```
 
-1. Change docker file to use your local IB Gateway installer file, instead of
-   Loading it from this project releases: Open `Dockerfile` on editor and
-   replace this lines:
+1. To use a local IB Gateway installer instead of downloading it, open
+   `stable/Dockerfile` (or `latest/Dockerfile`) and replace the two `curl`
+   lines that fetch `${IB_GATEWAY_FILE}` and its `.sha256` with
 
    ```docker
-   RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
-       --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-   RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
-       --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
+   COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
+   COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 .
    ```
 
-   with
-
-   ```docker
-   COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-   ```
-
-1. Remove `RUN sha256sum --check
-   ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256` from
-   Dockerfile (unless you want to keep checksum-check)
-1. Download IB Gateway and name the file
+   (or drop the `sha256sum --check` line if you do not want to keep the
+   checksum check)
+1. Download IB Gateway into the channel directory and name the file
    `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
-   `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
-   (first line)
-1. Download IBC and name the file `IBCLinux-3.24.2.zip`, where
-   `{IBC_VERSION}` must match the version as configured on Dockerfile
-1. Build and run: `docker-compose up --build`
+   `${IB_GATEWAY_VERSION}` must match the version configured in the
+   `Dockerfile`. Create the `.sha256` file with `sha256sum <file> > <file>.sha256`.
+1. Build and run: `docker compose up --build`
 
-[1]: https://github.com/users/gnzsnz/packages/container/package/ib-gateway "ib-gateway"
+Do not edit `stable/Dockerfile` or `latest/Dockerfile` for permanent changes;
+they are generated from `Dockerfile.template` by `update.sh`.
+
+## Release process
+
+Images are published by the
+[Publish Docker](https://github.com/mysyzygy/ib-gateway-docker/blob/master/.github/workflows/publish.yml)
+workflow whenever a tag of the form `v<version>-latest` or `v<version>-stable`
+is pushed. Tags are pushed by hand:
+
+1. The daily `Detect IB Gateway Releases` workflow opens a PR that bumps the
+   channel to the new IBKR build and stores the installer on a GitHub release.
+   `Detect IBC Releases` does the same for IBC, including the new `IBC_SHA256`.
+1. Merge the PR (or merge from upstream).
+1. Tag and push, for example:
+
+   ```bash
+   git tag v10.50.1e-latest && git push origin v10.50.1e-latest
+   git tag v10.45.1j-stable && git push origin v10.45.1j-stable
+   ```
+
+The workflow builds `linux/amd64` and `linux/arm64` and pushes the
+`<channel>`, `<major.minor>` and `<version>` tags.
+
+[1]: https://github.com/mysyzygy/ib-gateway-docker/pkgs/container/ib-gateway "ib-gateway"
 [2]: https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop "tws-rdesktop"
-
-## Repo stats
-
-Repository stars overtime.
-
-[![Stargazers over time](https://starchart.cc/gnzsnz/ib-gateway-docker.svg?variant=adaptive)](https://starchart.cc/gnzsnz/ib-gateway-docker)
