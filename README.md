@@ -65,7 +65,7 @@ This fork publishes the [ib-gateway][1] image, for `linux/amd64` and
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
 | [ib-gateway][1] | `latest` | `10.50.1e` | `3.24.2` | `latest` `10.50` `10.50.1e` |
-| [ib-gateway][1] |`stable` | `10.45.1j` | `3.24.2` | `stable` `10.45` `10.45.1j` |
+| [ib-gateway][1] |`stable` | `10.50.1e` | `3.24.2` | `stable` `10.50` `10.50.1e` |
 
 All tags are available in the container repository for [ib-gateway][1]. The
 TWS image ([tws-rdesktop][2]) is only available from upstream.
@@ -698,7 +698,7 @@ is pushed. Tags are pushed by hand:
 
    ```bash
    git tag v10.50.1e-latest && git push origin v10.50.1e-latest
-   git tag v10.45.1j-stable && git push origin v10.45.1j-stable
+   git tag v10.50.1e-stable && git push origin v10.50.1e-stable
    ```
 
 The workflow builds `linux/amd64` and `linux/arm64` and pushes the
